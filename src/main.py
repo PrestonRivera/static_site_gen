@@ -1,6 +1,8 @@
 import os
 import shutil
 from textnode import TextNode
+from utils import extract_titles
+
 
 
 def copy_static(src, dest):
@@ -22,6 +24,16 @@ def copy_static(src, dest):
             copy_static(src_item, dest_item)  # Recursively copy directory
             print(f"Copied directory: {src_item} to {dest_item}")
 
+def extract_titles(markdown):
+    if "#" not in markdown:
+        raise Exception("No header to remove")
+    
+    lines = markdown.split("\n")
+    for line in lines:
+        if line.startswith("# "):
+            return line.lstrip("# ").strip()
+    
+    raise Exception("No h1 header found")
 
 
 def main():
