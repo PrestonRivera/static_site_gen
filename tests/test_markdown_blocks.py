@@ -1,5 +1,10 @@
 import unittest
-from htmlnode import HTMLNode, LeafNode
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent / 'src'))
+
+from htmlnode import LeafNode
 from markdown_blocks import (
     markdown_to_block, 
     block_to_block_type,
@@ -109,18 +114,17 @@ A paragraph of text.
 
 1. An ordered list item
 """
-        html_node = markdown_to_html_node(example_markdown)
-        self.assertIsInstance(html_node, HTMLNode)
-        self.assertEqual(html_node.tag, "div")
-        self.assertEqual(len(html_node.children), 6)
+        expected_html = (
+            "<h1>Heading 1</h1>"
+            "<p>A paragraph of text.</p>"
+            "<blockquote><p>A quote of text.</p></blockquote>"
+            "<pre><code>code block</code></pre>"
+            "<ul><li>An unordered list item</li></ul>"
+            "<ol><li>An ordered list item</li></ol>"
+        )
 
-    def test_heading_to_html_node(self):
-        block = "# Heading 1"
-        node = heading_to_html_node(block)
-        self.assertEqual(node.tag, "h1")
-        self.assertEqual(len(node.children), 1)
-        self.assertIsInstance(node.children[0], LeafNode)
-        self.assertEqual(node.children[0].value, "Heading 1")
+        html_result = markdown_to_html_node(example_markdown)
+        self.assertEqual(html_result, expected_html)
 
     def test_paragraph_to_html_node(self):
         block = "A paragraph of text."

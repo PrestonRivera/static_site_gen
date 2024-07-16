@@ -1,48 +1,63 @@
 import os
 import shutil
-from textnode import TextNode
 from utils import extract_titles
+from markdown_blocks import markdown_to_html_node
 
 
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
-def copy_static(src, dest):
-    # Ensure the destination directory is clean
-    if os.path.exists(dest):
-        shutil.rmtree(dest)  # Remove all contents of the destination directory
-    os.makedirs(dest)  # Create the destination directory
+    # Read markdown file
+    with open(from_path, 'r') as f:
+        markdown_content = f.read()
 
-    # Iterate through the items in the source directory
-    for item in os.listdir(src):
-        src_item = os.path.join(src, item)
-        dest_item = os.path.join(dest, item)
+    # Read template file
+    with open(template_path, 'r') as f:
+        template_content = f.read()
 
-        # Check if the item is a file or directory
-        if os.path.isfile(src_item):
-            shutil.copy(src_item, dest_item)  # Copy file
-            print(f"Copied file: {src_item} to {dest_item}")
-        elif os.path.isdir(src_item):
-            copy_static(src_item, dest_item)  # Recursively copy directory
-            print(f"Copied directory: {src_item} to {dest_item}")
+    # Convert markdown to HTML
+    html_content = markdown_to_html_node(markdown_content)  # Directly get the HTML content
 
-def extract_titles(markdown):
-    if "#" not in markdown:
-        raise Exception("No header to remove")
-    
-    lines = markdown.split("\n")
-    for line in lines:
-        if line.startswith("# "):
-            return line.lstrip("# ").strip()
-    
-    raise Exception("No h1 header found")
+    # Extract the title
+    title = extract_titles(markdown_content)
 
+    # Replace placeholders in the template
+    final_html = template_content.replace("{{ Title }}", title).replace("{{ Content }}", html_content)
+
+    # Ensure the destination directory exists
+    dest_dir = os.path.dirname(dest_path)
+    if not os.path.exists(dest_dir):
+        os.makedirs(dest_dir)
+
+    # Write the final HTML content to the destination path
+    with open(dest_path, 'w') as f:
+        f.write(final_html)
+
+
+def clear_public_directory():
+    if os.path.exists("public"):
+        shutil.rmtree("public")
+    os.makedirs("public", exist_ok=True)
+
+
+def copy_static_files():
+    if os.path.exists('static'):
+        for item in os.listdir('static'):
+            s = os.path.join('static', item)
+            d = os.path.join('public', item)
+            if os.path.isdir(s):
+                shutil.copytree(s, d, False, None)
+            else:
+                shutil.copy2(s, d)
 
 def main():
-    node = TextNode("This is my text", "bold")
-    print(node)
 
-    source_directory = "static"
-    destination_directory = "public"
-    copy_static(source_directory, destination_directory)
+    clear_public_directory()
+
+    copy_static_files()
+
+    generate_page("content/index.md", "template.html", "public/index.html")
+
 
 
 if __name__ == "__main__":

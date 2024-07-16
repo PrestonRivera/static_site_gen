@@ -63,7 +63,7 @@ def markdown_to_html_node(markdown):
             node = paragraph_to_html_node(block)
 
         html_nodes.append(node)
-    return ParentNode("div", html_nodes)
+    return "".join(node.to_html() for node in html_nodes)
 
 
 def text_to_children(text):
@@ -127,12 +127,13 @@ def ulist_to_html_node(block):
 
 def quote_to_html_node(block):
     lines = block.split("\n")
-    new_paragraphs = []
+    content = "\n".join([line.lstrip("> ").strip() for line in lines if line.startswith(">")])
+    return ParentNode("blockquote", text_to_children(content))
 
-    for line in lines:
-        if not line.startswith(">"):
-            raise ValueError("Invalid quote block")
-        content = line.lstrip("> ").strip()
-        paragraph_node = ParentNode("p", text_to_children(content))
-        new_paragraphs.append(paragraph_node)
-    return ParentNode("blockquote", new_paragraphs)
+
+
+if __name__ == "__main__":
+
+    markdown_content = "This is a test content."
+    html_content = markdown_to_html_node(markdown_content)
+    print(html_content)
