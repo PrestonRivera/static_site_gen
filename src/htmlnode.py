@@ -95,7 +95,7 @@ if __name__ == "__main__":
                         [
                             LeafNode("h1", "Header"),
                             ParentNode(
-                                "article",  # Mind the typo fixed here from "artical" to "article"
+                                "article",
                                 [
                                     LeafNode("p", "Article text"),
                                     LeafNode("p", "More text"),
